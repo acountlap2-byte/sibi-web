@@ -6,6 +6,8 @@ import PenerjemahanSibi from "./penerjemahansibi";
 import SpeechToText from "./speechtoteks";
 import HasilPenerjemahan from "./hasilterjemah";
 
+
+
 type Page =
   | "landing"
   | "mode"
