@@ -1,0 +1,58 @@
+/* ===== PAGE ===== */
+.page {
+  min-height: 100vh;
+  background: #7e8b9c;
+  background: #f6f8fb, ;
+  padding: 16px; /* ⬅ diperkecil */
+}
+
+/* ===== HEADER ===== */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px; /* ⬅ diperkecil */
+}
+
+.top-bar h2 {
+  font-size: 1.05rem; /* ⬅ diperkecil */
+}
+
+/* ===== CARD ===== */
+.card {
+  background: #dadbe3;
+  border-radius: 14px;
+  padding: 18px;              /* ⬅ diperkecil */
+  box-shadow: 0 8px 22px rgba(0,0,0,0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;                  /* ⬅ diperkecil */
+  width: 100%;
+  max-width: 460px;
+  text-align: center;
+  min-height: 300px;          /* ⬅ dari 360 → 300 */
+}
+
+/* ===== HASIL TEKS ===== */
+.hasil-teks.final {
+  min-height: 64px;           /* ⬅ dari 80 → 64 */
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 14px;            /* ⬅ diperkecil */
+}
+
+/* ===== ACTION BUTTONS ===== */
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;                  /* ⬅ diperkecil */
+  margin-top: 6px;
+}
+
+/* BUTTONS */
+.btn-outline,
+.btn-success {
+  padding: 9px;               /* ⬅ diperkecil */
+  border-radius: 12px;
+  font-size: 0.85rem;
+}

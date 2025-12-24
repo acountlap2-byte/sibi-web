@@ -1,0 +1,173 @@
+* {
+  box-sizing: border-box;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* ===== PAGE ===== */
+.page {
+  min-height: 100vh;
+  background: #f4f7fb;
+  padding: 20px;
+}
+
+/* ===== HEADER ===== */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.top-bar h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  background: #e5edff;
+  color: #7794d3;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* ===== CONTENT ===== */
+.content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 110px);
+}
+
+/* ===== CARD ===== */
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.card h4 {
+  font-size: 1rem;
+  color: #111827;
+}
+
+/* ===== VIDEO ===== */
+.video {
+  width: 100%;
+  height: 280px;
+  background: black;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+/* ===== HASIL TEKS ===== */
+.hasil-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.huruf-terdeteksi {
+  font-size: 13px;
+  color: #475569;
+}
+
+.hasil-teks {
+  min-height: 56px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  border: 1px solid #e5e7eb;
+  font-size: 15px;
+  font-weight: 500;
+  color: #15254b;
+}
+
+/* ===== TEXT ACTIONS ===== */
+.text-actions {
+  width: 100%;                  /* ⬅ sama lebar dengan tombol Proses */
+  display: flex;
+  justify-content: center;      /* ⬅ tombol ke tengah */
+  gap: 8px;
+}
+
+.text-actions button {
+  flex: 1;                      /* ⬅ semua tombol sama lebar */
+  max-width: 120px;             /* ⬅ biar tidak terlalu panjang */
+  height: 40px;                 /* ⬅ tinggi konsisten */
+  border-radius: 12px;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  background: #00B7B5;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* ===== BUTTONS ===== */
+.btn-primary {
+  padding: 11px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.btn-outline {
+  flex: 1;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-success {
+  flex: 1;
+  padding: 10px;
+  border-radius: 14px;
+  border: none;
+  background: #005461;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .content {
+    min-height: auto;
+    padding-top: 16px;
+  }
+
+  .video {
+    height: 240px;
+  }
+}

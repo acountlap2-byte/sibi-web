@@ -1,0 +1,164 @@
+/* ===== Reset ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+html, body {
+  height: 100%;
+}
+
+/* ===== Container Utama ===== */
+.mode-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #203a43, #eef2ff);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+/* ===== Judul & Subjudul ===== */
+.mode-title {
+  font-size: 36px;            /* ⬅️ diperbesar */
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.mode-subtitle {
+  font-size: 18px;            /* ⬅️ diperbesar */
+  color: #475569;
+  margin-bottom: 48px;
+  text-align: center;
+  max-width: 520px;
+  line-height: 1.6;
+}
+
+/* ===== Container Card ===== */
+.mode-card-container {
+  display: flex;
+  gap: 40px;                  /* ⬅️ lebih lega */
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 44px;
+}
+
+/* ===== Card ===== */
+.mode-card {
+  width: 360px;               /* ⬅️ diperbesar */
+  background-color: #ffffff;
+  border-radius: 18px;
+  padding: 32px;              /* ⬅️ diperbesar */
+  text-align: center;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.12);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.mode-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.16);
+}
+
+/* ===== Judul Card ===== */
+.mode-card h2 {
+  font-size: 22px;            /* ⬅️ diperbesar */
+  margin-bottom: 12px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* ===== Deskripsi Card ===== */
+.mode-card p {
+  font-size: 15px;            /* ⬅️ diperbesar */
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* ===== Button ===== */
+.btn-primary,
+.btn-secondary {
+  margin-top: 22px;
+  width: 100%;
+  padding: 14px 0;            /* ⬅️ diperbesar */
+  border: none;
+  border-radius: 999px;
+  font-size: 16px;            /* ⬅️ diperbesar */
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* Gerakan SIBI */
+.btn-primary {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.4);
+}
+
+/* Speech to Text */
+.btn-secondary {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  color: #ffffff;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(34, 197, 94, 0.4);
+}
+
+/* ===== Tombol Kembali ===== */
+.back-button {
+  margin-top: 10px;
+  padding: 12px 28px;         /* ⬅️ diperbesar */
+  background-color: transparent;
+  border: 2px solid #c7d2fe;
+  border-radius: 999px;
+  color: #1e40af;
+  font-size: 15px;            /* ⬅️ diperbesar */
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+}
+
+.back-button:hover {
+  background-color: #eef2ff;
+  border-color: #818cf8;
+  color: #1d4ed8;
+}
+
+.back-button:active {
+  transform: scale(0.96);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .mode-title {
+    font-size: 28px;
+  }
+
+  .mode-subtitle {
+    font-size: 16px;
+    margin-bottom: 36px;
+  }
+
+  .mode-card-container {
+    gap: 26px;
+  }
+
+  .mode-card {
+    width: 100%;
+    max-width: 380px;
+  }
+}

@@ -1,0 +1,41 @@
+/* ===== ACTION BUTTONS (RESET + PROSES) ===== */
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* ⬅ sejajar */
+  gap: 12px;
+  margin-top: 6px;
+}
+
+/* RESET */
+.btn-outline {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid #cbd5f5;
+  background: #ffffff;
+  color: #0284c7;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* PROSES */
+.btn-success {
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
+  background: #16a34a;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-success:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* RESPONSIVE */
+@media (max-width: 480px) {
+  .action-buttons {
+    grid-template-columns: 1fr;
+  }
+}
