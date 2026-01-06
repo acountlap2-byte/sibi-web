@@ -48,7 +48,7 @@ export default function ModeSelect({
       </div>
 
       <button className="back-button" onClick={onBack}>
-        ⬅ Kembali
+        ⬅ 
       </button>
     </div>
   );

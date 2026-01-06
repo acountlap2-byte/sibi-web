@@ -171,3 +171,29 @@
     height: 240px;
   }
 }
+/* ===== VIDEO WRAPPER (UNTUK LANDMARK) ===== */
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  height: 280px;              /* mengikuti .video */
+  border-radius: 14px;
+  overflow: hidden;
+  background: black;
+}
+
+/* video tetap pakai style lama */
+.video-wrapper .video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ===== CANVAS LANDMARK ===== */
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;       /* tidak ganggu klik */
+}

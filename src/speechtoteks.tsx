@@ -2,12 +2,18 @@ import { useRef, useState } from "react";
 import { ArrowLeft, Mic, Square, CheckCircle, RotateCcw } from "lucide-react";
 import "./speechtoteks.css";
 
+/* =======================
+   PROPS
+======================= */
 type Props = {
   onBack: () => void;
   onFinish: (hasil: string) => void;
 };
 
-type SpeechRecognition = {
+/* =======================
+   SPEECH TYPE
+======================= */
+type SpeechRecognitionType = {
   lang: string;
   interimResults: boolean;
   continuous: boolean;
@@ -19,29 +25,48 @@ type SpeechRecognition = {
   onend: (() => void) | null;
 };
 
+/* =======================
+   DETEKSI IOS
+======================= */
+const isIOS =
+  typeof navigator !== "undefined" &&
+  /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+/* =======================
+   COMPONENT
+======================= */
 export default function SpeechToText({ onBack, onFinish }: Props) {
-  const [isListening, setIsListening] = useState<boolean>(false);
-  const [hasilTeks, setHasilTeks] = useState<string>("");
+  const [isListening, setIsListening] = useState(false);
+  const [hasilTeks, setHasilTeks] = useState("");
 
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionType | null>(null);
 
-  /* ===== NORMALISASI TEKS ===== */
+  /* =======================
+     NORMALISASI TEKS
+  ======================= */
   const normalizeText = (text: string) =>
-    text.trim().replace(/\s+/g, " ").replace(/^./, (c) => c.toUpperCase());
+    text
+      .trim()
+      .replace(/\s+/g, " ")
+      .replace(/^./, (c) => c.toUpperCase());
 
-  /* ===== START SPEECH ===== */
+  /* =======================
+     START SPEECH
+     (HANYA ANDROID / DESKTOP)
+  ======================= */
   const startSpeech = () => {
-    if (isListening) return;
+    if (isListening || isIOS) return;
 
     const SpeechRecognitionCtor =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognitionCtor) {
       alert("Browser tidak mendukung Speech Recognition");
       return;
     }
 
-    const recognition: SpeechRecognition = new SpeechRecognitionCtor();
+    const recognition: SpeechRecognitionType = new SpeechRecognitionCtor();
     recognitionRef.current = recognition;
 
     recognition.lang = "id-ID";
@@ -49,29 +74,23 @@ export default function SpeechToText({ onBack, onFinish }: Props) {
     recognition.continuous = false;
 
     recognition.onstart = () => {
-      console.log("🎤 Speech started");
       setIsListening(true);
       setHasilTeks("");
 
-      // ⏱ Auto stop 6 detik
+      // auto stop 6 detik
       setTimeout(() => {
         recognition.stop();
       }, 6000);
     };
 
     recognition.onresult = (event: any) => {
-      console.log("🎯 Raw result:", event.results);
       const text = event.results[0][0].transcript;
       setHasilTeks(normalizeText(text));
     };
 
-    recognition.onerror = (event: any) => {
-      console.error("Speech error:", event.error);
+    recognition.onerror = () => {
       setIsListening(false);
-
-      if (event.error !== "no-speech") {
-        alert("Gagal mendeteksi suara, silakan coba lagi.");
-      }
+      alert("Gagal mendeteksi suara");
     };
 
     recognition.onend = () => {
@@ -86,20 +105,23 @@ export default function SpeechToText({ onBack, onFinish }: Props) {
     }
   };
 
-  /* ===== STOP ===== */
+  /* =======================
+     STOP & RESET
+  ======================= */
   const stopSpeech = () => {
     recognitionRef.current?.stop();
     setIsListening(false);
   };
 
-  /* ===== RESET ===== */
   const resetSpeech = () => {
     recognitionRef.current?.stop();
     setHasilTeks("");
     setIsListening(false);
   };
 
-  /* ===== RENDER ===== */
+  /* =======================
+     RENDER
+  ======================= */
   return (
     <div className="page">
       <div className="top-bar">
@@ -112,23 +134,47 @@ export default function SpeechToText({ onBack, onFinish }: Props) {
       <div className="content">
         <div className="card">
           <h4>
-            <Mic size={18} /> Mikrofon
+            <Mic size={18} /> Input Suara
           </h4>
 
+          {/* ===== HASIL ===== */}
           <div className="hasil-teks final">
-            {hasilTeks || "Tekan mikrofon lalu berbicaralah"}
+            {hasilTeks || "Masukkan suara atau teks"}
           </div>
 
-          {!isListening ? (
-            <button className="btn-primary" onClick={startSpeech}>
-              <Mic size={16} /> Mulai Bicara
-            </button>
-          ) : (
-            <button className="btn-danger" onClick={stopSpeech}>
-              <Square size={16} /> Hentikan
-            </button>
+          {/* ===== MODE IOS ===== */}
+          {isIOS && (
+            <div className="ios-fallback">
+              <p className="ios-info">
+                ⚠️ iOS tidak mendukung speech otomatis.  
+                Tap kolom di bawah lalu tekan <b>ikon mic di keyboard iPhone</b>.
+              </p>
+
+              <textarea
+                className="ios-textarea"
+                placeholder="Tekan mic di keyboard lalu bicara..."
+                value={hasilTeks}
+                onChange={(e) => setHasilTeks(e.target.value)}
+              />
+            </div>
           )}
 
+          {/* ===== MODE ANDROID / DESKTOP ===== */}
+          {!isIOS && (
+            <>
+              {!isListening ? (
+                <button className="btn-primary" onClick={startSpeech}>
+                  <Mic size={16} /> Mulai Bicara
+                </button>
+              ) : (
+                <button className="btn-danger" onClick={stopSpeech}>
+                  <Square size={16} /> Hentikan
+                </button>
+              )}
+            </>
+          )}
+
+          {/* ===== ACTION ===== */}
           <div className="action-buttons">
             <button className="btn-outline" onClick={resetSpeech}>
               <RotateCcw size={16} /> Reset
