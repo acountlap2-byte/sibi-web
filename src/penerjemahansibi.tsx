@@ -12,8 +12,10 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cameraRef = useRef<any>(null);
 
+  // ================== KONTROL STABILITAS ==================
   const lastSendRef = useRef(0);
-  const SEND_INTERVAL = 120; // ms (aman & responsif)
+  const lastHurufRef = useRef<string>("-");
+  const SEND_INTERVAL = 250; // ⬅️ lebih stabil (WAJIB)
 
   const [hurufSaatIni, setHurufSaatIni] = useState("-");
   const [hasilTeks, setHasilTeks] = useState("");
@@ -104,7 +106,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
         ctx.fill();
       });
 
-      /* ===== KIRIM KE API ===== */
+      /* ===== KIRIM KE API (TERBATAS) ===== */
       const now = Date.now();
       if (now - lastSendRef.current < SEND_INTERVAL) return;
       lastSendRef.current = now;
@@ -113,22 +115,21 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
 
       fetch("https://phialine-unstamped-baylee.ngrok-free.dev/predict", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-      },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ landmark }),
-        })
-
+      })
         .then(res => res.json())
         .then(data => {
           console.log("RESPON API:", data);
 
-          // ⭐ FIX PALING PENTING
+          // ===== STABILISASI OUTPUT =====
           if (data.status === "FINAL") {
-            setHurufSaatIni(data.huruf);
-          } else if (data.status === "LOW_CONF") {
-            setHurufSaatIni("-");
+            if (data.huruf !== lastHurufRef.current) {
+              lastHurufRef.current = data.huruf;
+              setHurufSaatIni(data.huruf);
+            }
           }
+          // ❌ TIDAK ADA reset ke "-"
         })
         .catch(err => console.error("Fetch error:", err));
     });
@@ -163,6 +164,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   const resetTeks = () => {
     setHasilTeks("");
     setHurufSaatIni("-");
+    lastHurufRef.current = "-";
   };
 
   /* ================= UI ================= */
@@ -170,7 +172,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
     <div className="page">
       <div className="top-bar">
         <button className="back-btn" onClick={onBack}>
-          <ArrowLeft size={18} /> 
+          <ArrowLeft size={18} />
         </button>
         <h2>Penerjemahan Bahasa Isyarat SIBI</h2>
       </div>
