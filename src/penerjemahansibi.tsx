@@ -12,20 +12,20 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cameraRef = useRef<any>(null);
 
-  // ================== SESSION & STABILITAS ==================
+  // ================= SESSION & STABILITAS =================
   const sessionIdRef = useRef<string>(crypto.randomUUID());
 
   const lastSendRef = useRef(0);
-  const lastHurufRef = useRef<string>("-");
+  const lastHurufRef = useRef("-");
   const lastFinalTimeRef = useRef(0);
   const neutralDetectedRef = useRef(true);
 
-  const SEND_INTERVAL = 250;   // interval kirim API
-  const REPEAT_DELAY = 900;    // jeda agar huruf sama bisa diulang
+  const SEND_INTERVAL = 250; // ms
+  const REPEAT_DELAY = 900;  // ms
 
+  const [kameraAktif, setKameraAktif] = useState(false);
   const [hurufSaatIni, setHurufSaatIni] = useState("-");
   const [hasilTeks, setHasilTeks] = useState("");
-  const [kameraAktif, setKameraAktif] = useState(false);
 
   /* ================= AKTIFKAN KAMERA ================= */
   const startCamera = async () => {
@@ -53,13 +53,13 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
     const CameraUtil = (window as any).Camera;
 
     if (!Hands || !CameraUtil) {
-      console.error("❌ MediaPipe Hands belum tersedia");
+      console.error("MediaPipe belum tersedia");
       return;
     }
 
     const hands = new Hands({
-      locateFile: (file: string) =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+      locateFile: (f: string) =>
+        `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`,
     });
 
     hands.setOptions({
@@ -79,7 +79,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       const lm = results.multiHandLandmarks[0];
       if (!lm || lm.length !== 21) return;
 
-      /* ===== DRAW LANDMARK (TETAP) ===== */
+      // ===== DRAW LANDMARK =====
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
@@ -105,21 +105,14 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
         ctx.stroke();
       });
 
-      ctx.fillStyle = "#ff0000";
-      lm.forEach((p: any) => {
-        ctx.beginPath();
-        ctx.arc(p.x * canvas.width, p.y * canvas.height, 4, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      /* ===== KIRIM KE API (TERKONTROL) ===== */
+      // ===== KIRIM API (TERKONTROL) =====
       const now = Date.now();
       if (now - lastSendRef.current < SEND_INTERVAL) return;
       lastSendRef.current = now;
 
       const landmark = lm.map((p: any) => [p.x, p.y, p.z]);
 
-      fetch("https://phialine-unstamped-baylee.ngrok-free.dev/predict", {
+      fetch("https://YOUR-NGROK-OR-SERVER/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -129,9 +122,6 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       })
         .then(res => res.json())
         .then(data => {
-          // ===============================
-          // DETEKSI NETRAL
-          // ===============================
           if (data.status !== "FINAL") {
             neutralDetectedRef.current = true;
             return;
@@ -139,22 +129,19 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
 
           const nowFinal = Date.now();
 
-          const hurufBaru =
-            data.huruf !== lastHurufRef.current;
-
-          const bolehUlangHurufSama =
+          const hurufBaru = data.huruf !== lastHurufRef.current;
+          const bolehUlang =
             data.huruf === lastHurufRef.current &&
             neutralDetectedRef.current &&
             nowFinal - lastFinalTimeRef.current > REPEAT_DELAY;
 
-          if (hurufBaru || bolehUlangHurufSama) {
+          if (hurufBaru || bolehUlang) {
             lastHurufRef.current = data.huruf;
             lastFinalTimeRef.current = nowFinal;
             neutralDetectedRef.current = false;
             setHurufSaatIni(data.huruf);
           }
-        })
-        .catch(err => console.error("Fetch error:", err));
+        });
     });
 
     cameraRef.current = new CameraUtil(videoRef.current, {
@@ -163,8 +150,6 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
           await hands.send({ image: videoRef.current });
         }
       },
-      width: 640,
-      height: 480,
     });
 
     cameraRef.current.start();
@@ -175,72 +160,43 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
     };
   }, [kameraAktif]);
 
-  /* ================= TOMBOL ================= */
+  /* ================= UI ACTION ================= */
   const tambahHuruf = () => {
     if (hurufSaatIni !== "-") {
       setHasilTeks(prev => prev + hurufSaatIni);
     }
   };
 
-  const tambahSpasi = () => setHasilTeks(prev => prev + " ");
-  const hapusHuruf = () => setHasilTeks(prev => prev.slice(0, -1));
-
   const resetTeks = () => {
     setHasilTeks("");
     setHurufSaatIni("-");
     lastHurufRef.current = "-";
-    lastFinalTimeRef.current = 0;
     neutralDetectedRef.current = true;
   };
 
   /* ================= UI ================= */
   return (
     <div className="page">
-      <div className="top-bar">
-        <button className="back-btn" onClick={onBack}>
-          <ArrowLeft size={18} />
+      <button onClick={onBack}><ArrowLeft /></button>
+
+      <video ref={videoRef} muted playsInline />
+      <canvas ref={canvasRef} />
+
+      {!kameraAktif && (
+        <button onClick={startCamera}>
+          <Camera /> Aktifkan Kamera
         </button>
-        <h2>Penerjemahan Bahasa Isyarat SIBI</h2>
-      </div>
+      )}
 
-      <div className="content">
-        <div className="card">
-          <h4><Camera size={18} /> Kamera</h4>
+      <p>Huruf: <strong>{hurufSaatIni}</strong></p>
+      <div>{hasilTeks || "Hasil terjemahan muncul di sini"}</div>
 
-          <div className="video-wrapper">
-            <video ref={videoRef} className="video" muted playsInline />
-            <canvas ref={canvasRef} className="canvas" />
-          </div>
+      <button onClick={tambahHuruf}>Tambah Huruf</button>
+      <button onClick={resetTeks}>Reset</button>
 
-          {!kameraAktif && (
-            <button className="btn-primary" onClick={startCamera}>
-              Aktifkan Kamera
-            </button>
-          )}
-
-          <div className="hasil-container">
-            <p>Huruf terdeteksi: <strong>{hurufSaatIni}</strong></p>
-            <div className="hasil-teks">
-              {hasilTeks || "Hasil terjemahan akan muncul di sini"}
-            </div>
-          </div>
-
-          <div className="text-actions">
-            <button onClick={tambahHuruf}>Tambah Huruf</button>
-            <button onClick={tambahSpasi}>Spasi</button>
-            <button onClick={hapusHuruf}>Hapus</button>
-            <button onClick={resetTeks}>Reset</button>
-          </div>
-
-          <button
-            className="btn-success"
-            onClick={() => onFinish(hasilTeks)}
-            disabled={!hasilTeks}
-          >
-            <CheckCircle size={16} /> Selesai
-          </button>
-        </div>
-      </div>
+      <button onClick={() => onFinish(hasilTeks)}>
+        <CheckCircle /> Selesai
+      </button>
     </div>
   );
 }
