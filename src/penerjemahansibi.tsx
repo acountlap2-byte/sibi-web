@@ -12,10 +12,16 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cameraRef = useRef<any>(null);
 
-  // ================== KONTROL STABILITAS ==================
+  // ================== SESSION & STABILITAS ==================
+  const sessionIdRef = useRef<string>(crypto.randomUUID());
+
   const lastSendRef = useRef(0);
   const lastHurufRef = useRef<string>("-");
-  const SEND_INTERVAL = 250; // ⬅️ lebih stabil (WAJIB)
+  const lastFinalTimeRef = useRef(0);
+  const neutralDetectedRef = useRef(true);
+
+  const SEND_INTERVAL = 250;   // interval kirim API
+  const REPEAT_DELAY = 900;    // jeda agar huruf sama bisa diulang
 
   const [hurufSaatIni, setHurufSaatIni] = useState("-");
   const [hasilTeks, setHasilTeks] = useState("");
@@ -73,7 +79,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       const lm = results.multiHandLandmarks[0];
       if (!lm || lm.length !== 21) return;
 
-      /* ===== DRAW LANDMARK ===== */
+      /* ===== DRAW LANDMARK (TETAP) ===== */
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
@@ -106,7 +112,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
         ctx.fill();
       });
 
-      /* ===== KIRIM KE API (TERBATAS) ===== */
+      /* ===== KIRIM KE API (TERKONTROL) ===== */
       const now = Date.now();
       if (now - lastSendRef.current < SEND_INTERVAL) return;
       lastSendRef.current = now;
@@ -116,20 +122,37 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       fetch("https://phialine-unstamped-baylee.ngrok-free.dev/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ landmark }),
+        body: JSON.stringify({
+          session_id: sessionIdRef.current,
+          landmark,
+        }),
       })
         .then(res => res.json())
         .then(data => {
-          console.log("RESPON API:", data);
-
-          // ===== STABILISASI OUTPUT =====
-          if (data.status === "FINAL") {
-            if (data.huruf !== lastHurufRef.current) {
-              lastHurufRef.current = data.huruf;
-              setHurufSaatIni(data.huruf);
-            }
+          // ===============================
+          // DETEKSI NETRAL
+          // ===============================
+          if (data.status !== "FINAL") {
+            neutralDetectedRef.current = true;
+            return;
           }
-          // ❌ TIDAK ADA reset ke "-"
+
+          const nowFinal = Date.now();
+
+          const hurufBaru =
+            data.huruf !== lastHurufRef.current;
+
+          const bolehUlangHurufSama =
+            data.huruf === lastHurufRef.current &&
+            neutralDetectedRef.current &&
+            nowFinal - lastFinalTimeRef.current > REPEAT_DELAY;
+
+          if (hurufBaru || bolehUlangHurufSama) {
+            lastHurufRef.current = data.huruf;
+            lastFinalTimeRef.current = nowFinal;
+            neutralDetectedRef.current = false;
+            setHurufSaatIni(data.huruf);
+          }
         })
         .catch(err => console.error("Fetch error:", err));
     });
@@ -161,10 +184,13 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
 
   const tambahSpasi = () => setHasilTeks(prev => prev + " ");
   const hapusHuruf = () => setHasilTeks(prev => prev.slice(0, -1));
+
   const resetTeks = () => {
     setHasilTeks("");
     setHurufSaatIni("-");
     lastHurufRef.current = "-";
+    lastFinalTimeRef.current = 0;
+    neutralDetectedRef.current = true;
   };
 
   /* ================= UI ================= */
