@@ -12,7 +12,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cameraRef = useRef<any>(null);
 
-  // ================== SESSION & STABILITAS ==================
+  // ===== SESSION & STABILITAS =====
   const sessionIdRef = useRef<string>(crypto.randomUUID());
 
   const lastSendRef = useRef(0);
@@ -20,8 +20,8 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   const lastFinalTimeRef = useRef(0);
   const neutralDetectedRef = useRef(true);
 
-  const SEND_INTERVAL = 250;   // interval kirim API
-  const REPEAT_DELAY = 900;    // jeda agar huruf sama bisa diulang
+  const SEND_INTERVAL = 250;
+  const REPEAT_DELAY = 900;
 
   const [hurufSaatIni, setHurufSaatIni] = useState("-");
   const [hasilTeks, setHasilTeks] = useState("");
@@ -129,14 +129,21 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       })
         .then(res => res.json())
         .then(data => {
-          if (data.status !== "FINAL") {
+          if (!data || !data.status) return;
+
+          if (data.status === "BUSY" || data.status === "HOLD") return;
+
+          if (data.status === "UNSURE" || data.status === "SEARCHING") {
             neutralDetectedRef.current = true;
             return;
           }
 
+          if (data.status !== "FINAL") return;
+
           const nowFinal = Date.now();
 
           const hurufBaru = data.huruf !== lastHurufRef.current;
+
           const bolehUlangHurufSama =
             data.huruf === lastHurufRef.current &&
             neutralDetectedRef.current &&
