@@ -202,3 +202,7 @@
     height: 240px;
   }
 }
+.subtitle {
+  font-size: 13px;
+  color: #64748b;
+}

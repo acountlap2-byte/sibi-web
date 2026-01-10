@@ -183,6 +183,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
           <ArrowLeft size={18} />
         </button>
         <h2>Penerjemahan Bahasa Isyarat SIBI</h2>
+        <p className="subtitle">Versi pengujian UI terbaru</p>
       </div>
 
       <div className="content edu-wrapper">
@@ -231,12 +232,12 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
         </div>
 
         {/* PANEL EDUKASI */}
-        {showEdu && (
+        {showEdu && ( 
           <div className="edu-panel">
             <img src="abjadsibi.jpg" alt="Edukasi SIBI" />
           </div>
         )}
-
+        
       </div>
     </div>
   );
