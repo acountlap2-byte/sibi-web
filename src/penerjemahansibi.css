@@ -3,125 +3,128 @@
   font-family: "Inter", system-ui, sans-serif;
 }
 
-/* ===== PAGE ===== */
 .page {
   min-height: 100vh;
-  background: #f4f7fb;
+  background: #7f8fa3;
   padding: 20px;
 }
 
-/* ===== HEADER ===== */
+/* HEADER */
 .top-bar {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
+  color: white;
 }
 
 .top-bar h2 {
   font-size: 1.15rem;
   font-weight: 600;
-  color: #1f2937;
 }
 
 .back-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   padding: 8px 12px;
   border-radius: 10px;
   border: none;
-  background: #e5edff;
-  color: #7794d3;
+  background: #dbeafe;
+  color: #1e40af;
   cursor: pointer;
-  font-weight: 500;
 }
 
-/* ===== CONTENT ===== */
+/* CONTENT */
 .content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: calc(100vh - 110px);
+  position: relative;
+  min-height: calc(100vh - 120px);
 }
 
-/* ===== CARD ===== */
+/* CARD KAMERA */
 .card {
-  background: white;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #e5e7eb;
   border-radius: 16px;
   padding: 22px;
-  box-shadow: 0 10px 28px rgba(0,0,0,0.07);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.2);
   display: flex;
   flex-direction: column;
   gap: 14px;
   width: 100%;
   max-width: 480px;
+  z-index: 2;
 }
 
-.card h4 {
-  font-size: 1rem;
-  color: #111827;
+/* HEADER KAMERA */
+.kamera-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* ===== VIDEO ===== */
+/* ICON BUKU */
+.edukasi-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+/* VIDEO */
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  height: 260px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: black;
+}
+
 .video {
   width: 100%;
-  height: 280px;
-  background: black;
-  border-radius: 14px;
+  height: 100%;
   object-fit: cover;
 }
 
-/* ===== HASIL TEKS ===== */
+.canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* HASIL */
 .hasil-container {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.huruf-terdeteksi {
-  font-size: 13px;
-  color: #475569;
-}
-
 .hasil-teks {
   min-height: 56px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: #f1f5f9;
+  background: #f8fafc;
   border: 1px solid #e5e7eb;
-  font-size: 15px;
-  font-weight: 500;
-  color: #15254b;
 }
 
-/* ===== TEXT ACTIONS ===== */
+/* ACTION */
 .text-actions {
-  width: 100%;                  /* ⬅ sama lebar dengan tombol Proses */
   display: flex;
-  justify-content: center;      /* ⬅ tombol ke tengah */
   gap: 8px;
 }
 
 .text-actions button {
-  flex: 1;                      /* ⬅ semua tombol sama lebar */
-  max-width: 120px;             /* ⬅ biar tidak terlalu panjang */
-  height: 40px;                 /* ⬅ tinggi konsisten */
+  flex: 1;
   border-radius: 12px;
   border: none;
-  font-size: 13px;
-  font-weight: 500;
+  background: #00b7b5;
   color: white;
+  height: 40px;
   cursor: pointer;
-  background: #00B7B5;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-
-/* ===== BUTTONS ===== */
+/* BUTTON */
 .btn-primary {
   padding: 11px;
   border-radius: 14px;
@@ -129,71 +132,44 @@
   background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: white;
   font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 12px;
-  margin-top: 6px;
-}
-
-.btn-outline {
-  flex: 1;
-  padding: 10px;
-  border-radius: 14px;
-  border: 1px solid #e5e7eb;
-  background: white;
-  cursor: pointer;
-  font-weight: 500;
 }
 
 .btn-success {
-  flex: 1;
   padding: 10px;
   border-radius: 14px;
   border: none;
   background: #005461;
   color: white;
   font-weight: 600;
-  cursor: pointer;
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-  .content {
-    min-height: auto;
-    padding-top: 16px;
-  }
-
-  .video {
-    height: 240px;
-  }
-}
-/* ===== VIDEO WRAPPER (UNTUK LANDMARK) ===== */
-.video-wrapper {
-  position: relative;
-  width: 100%;
-  height: 280px;              /* mengikuti .video */
-  border-radius: 14px;
-  overflow: hidden;
-  background: black;
-}
-
-/* video tetap pakai style lama */
-.video-wrapper .video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* ===== CANVAS LANDMARK ===== */
-.canvas {
+/* GAMBAR EDUKASI */
+.edukasi-side {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: calc(50% + 260px);
+  transform: translateY(-50%);
+  width: 300px;
+  z-index: 1;
+}
+
+.edukasi-img {
   width: 100%;
-  height: 100%;
-  pointer-events: none;       /* tidak ganggu klik */
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .card {
+    position: static;
+    transform: none;
+    margin: auto;
+  }
+
+  .edukasi-side {
+    position: static;
+    transform: none;
+    margin: 20px auto 0;
+  }
 }
