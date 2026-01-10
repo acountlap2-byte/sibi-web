@@ -3,97 +3,104 @@
   font-family: "Inter", system-ui, sans-serif;
 }
 
+/* ===== PAGE ===== */
 .page {
   min-height: 100vh;
-  background: #7f8fa3;
+  background: #f4f7fb;
   padding: 20px;
 }
 
-/* HEADER */
+/* ===== HEADER ===== */
 .top-bar {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
-  color: white;
 }
 
 .top-bar h2 {
   font-size: 1.15rem;
   font-weight: 600;
+  color: #1f2937;
 }
 
 .back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 8px 12px;
   border-radius: 10px;
   border: none;
-  background: #dbeafe;
-  color: #1e40af;
+  background: #e5edff;
+  color: #7794d3;
   cursor: pointer;
+  font-weight: 500;
 }
 
-/* CONTENT */
+/* ===== CONTENT ===== */
 .content {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: calc(100vh - 110px);
+  padding-top: 40px;
   position: relative;
-  min-height: calc(100vh - 120px);
 }
 
-/* CARD KAMERA */
+/* ===== CARD ===== */
 .card {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  background: #e5e7eb;
+  background: white;
   border-radius: 16px;
   padding: 22px;
-  box-shadow: 0 10px 28px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.07);
   display: flex;
   flex-direction: column;
   gap: 14px;
   width: 100%;
   max-width: 480px;
-  z-index: 2;
+  margin-right: 20px;
 }
 
-/* HEADER KAMERA */
-.kamera-header {
+/* ===== CARD HEADER ===== */
+.card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* ICON BUKU */
-.edukasi-btn {
+/* ===== BUTTON EDU ===== */
+.btn-edu {
   background: none;
   border: none;
-  font-size: 28px;
   cursor: pointer;
 }
 
-/* VIDEO */
+/* ===== VIDEO WRAPPER ===== */
 .video-wrapper {
   position: relative;
   width: 100%;
-  height: 260px;
+  height: 280px;
   border-radius: 14px;
   overflow: hidden;
   background: black;
 }
 
-.video {
+.video-wrapper .video {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
+/* ===== CANVAS LANDMARK ===== */
 .canvas {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
 
-/* HASIL */
+/* ===== HASIL TEKS ===== */
 .hasil-container {
   display: flex;
   flex-direction: column;
@@ -104,27 +111,35 @@
   min-height: 56px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: #f8fafc;
+  background: #f1f5f9;
   border: 1px solid #e5e7eb;
+  font-size: 15px;
+  font-weight: 500;
+  color: #15254b;
 }
 
-/* ACTION */
+/* ===== TEXT ACTIONS ===== */
 .text-actions {
+  width: 100%;
   display: flex;
+  justify-content: center;
   gap: 8px;
 }
 
 .text-actions button {
   flex: 1;
+  max-width: 120px;
+  height: 40px;
   border-radius: 12px;
   border: none;
-  background: #00b7b5;
+  font-size: 13px;
+  font-weight: 500;
   color: white;
-  height: 40px;
   cursor: pointer;
+  background: #00B7B5;
 }
 
-/* BUTTON */
+/* ===== BUTTONS ===== */
 .btn-primary {
   padding: 11px;
   border-radius: 14px;
@@ -132,44 +147,58 @@
   background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: white;
   font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
 }
 
 .btn-success {
+  width: 100%;
   padding: 10px;
   border-radius: 14px;
   border: none;
   background: #005461;
   color: white;
   font-weight: 600;
+  cursor: pointer;
 }
 
-/* GAMBAR EDUKASI */
-.edukasi-side {
+/* =====================================================
+   ===== EDU PANEL RESPONSIVE FINAL =====
+===================================================== */
+
+/* 💻 LAPTOP / DESKTOP */
+.edu-panel {
   position: absolute;
-  top: 50%;
-  left: calc(50% + 260px);
-  transform: translateY(-50%);
-  width: 300px;
-  z-index: 1;
+  top: 30px;                /* 🔥 naikkan ke atas */
+  left: 75%;
+  transform: translateX(-50%);
+  width: 260px;
+  z-index: 10;
+  transition: all 0.3s ease;
 }
 
-.edukasi-img {
+
+.edu-panel img {
   width: 100%;
-  border-radius: 18px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
 
-/* RESPONSIVE */
-@media (max-width: 900px) {
-  .card {
-    position: static;
-    transform: none;
-    margin: auto;
+/* 📱 MOBILE */
+@media (max-width: 768px) {
+  .content {
+    padding-top: 20px;
   }
 
-  .edukasi-side {
-    position: static;
+  .edu-panel {
+    top: 90px;
+    left: auto;
+    right: 20px;
     transform: none;
-    margin: 20px auto 0;
+    width: 220px;
+  }
+
+  .video-wrapper {
+    height: 240px;
   }
 }

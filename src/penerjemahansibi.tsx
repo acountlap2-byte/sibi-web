@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, CheckCircle, Camera } from "lucide-react";
+import { ArrowLeft, CheckCircle, Camera, BookOpen } from "lucide-react";
 import "./penerjemahansibi.css";
 
 type Props = {
@@ -26,8 +26,9 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   const [hasilTeks, setHasilTeks] = useState("");
   const [kameraAktif, setKameraAktif] = useState(false);
 
-  const [showEdukasi, setShowEdukasi] = useState(false);
+  const [showEdu, setShowEdu] = useState(false); // 🔥 EDUKASI
 
+  /* ================= AKTIFKAN KAMERA ================= */
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -45,13 +46,17 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
     }
   };
 
+  /* ================= MEDIAPIPE ================= */
   useEffect(() => {
     if (!kameraAktif || !videoRef.current) return;
 
     const Hands = (window as any).Hands;
     const CameraUtil = (window as any).Camera;
 
-    if (!Hands || !CameraUtil) return;
+    if (!Hands || !CameraUtil) {
+      console.error("MediaPipe Hands belum tersedia");
+      return;
+    }
 
     const hands = new Hands({
       locateFile: (file: string) =>
@@ -70,13 +75,42 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
 
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      if (!video || !canvas) return;
+      if (!video || !canvas || video.videoWidth === 0) return;
 
       const lm = results.multiHandLandmarks[0];
       if (!lm || lm.length !== 21) return;
 
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "#00ff00";
+      ctx.lineWidth = 2;
+
+      const connections = [
+        [0,1],[1,2],[2,3],[3,4],
+        [0,5],[5,6],[6,7],[7,8],
+        [5,9],[9,10],[10,11],[11,12],
+        [9,13],[13,14],[14,15],[15,16],
+        [13,17],[17,18],[18,19],[19,20],
+        [0,17],
+      ];
+
+      connections.forEach(([a, b]) => {
+        ctx.beginPath();
+        ctx.moveTo(lm[a].x * canvas.width, lm[a].y * canvas.height);
+        ctx.lineTo(lm[b].x * canvas.width, lm[b].y * canvas.height);
+        ctx.stroke();
+      });
+
+      ctx.fillStyle = "#ff0000";
+      lm.forEach((p: any) => {
+        ctx.beginPath();
+        ctx.arc(p.x * canvas.width, p.y * canvas.height, 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
 
       const now = Date.now();
       if (now - lastSendRef.current < SEND_INTERVAL) return;
@@ -94,18 +128,27 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       })
         .then(res => res.json())
         .then(data => {
-          if (!data || data.status !== "FINAL") return;
+          if (!data || !data.status) return;
+
+          if (data.status === "BUSY" || data.status === "HOLD") return;
+
+          if (data.status === "UNSURE" || data.status === "SEARCHING") {
+            neutralDetectedRef.current = true;
+            return;
+          }
+
+          if (data.status !== "FINAL") return;
 
           const nowFinal = Date.now();
 
           const hurufBaru = data.huruf !== lastHurufRef.current;
 
-          const bolehUlang =
+          const bolehUlangHurufSama =
             data.huruf === lastHurufRef.current &&
             neutralDetectedRef.current &&
             nowFinal - lastFinalTimeRef.current > REPEAT_DELAY;
 
-          if (hurufBaru || bolehUlang) {
+          if (hurufBaru || bolehUlangHurufSama) {
             lastHurufRef.current = data.huruf;
             lastFinalTimeRef.current = nowFinal;
             neutralDetectedRef.current = false;
@@ -126,37 +169,30 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
 
     cameraRef.current.start();
 
-    return () => cameraRef.current?.stop();
+    return () => {
+      cameraRef.current?.stop();
+      hands.close && hands.close();
+    };
   }, [kameraAktif]);
 
-  const tambahHuruf = () => hurufSaatIni !== "-" && setHasilTeks(p => p + hurufSaatIni);
-  const tambahSpasi = () => setHasilTeks(p => p + " ");
-  const hapusHuruf = () => setHasilTeks(p => p.slice(0, -1));
-  const resetTeks = () => {
-    setHasilTeks("");
-    setHurufSaatIni("-");
-  };
-
+  /* ================= UI ================= */
   return (
     <div className="page">
       <div className="top-bar">
         <button className="back-btn" onClick={onBack}>
-          <ArrowLeft size={18}/>
+          <ArrowLeft size={18} />
         </button>
         <h2>Penerjemahan Bahasa Isyarat SIBI</h2>
       </div>
 
-      <div className="content split-layout">
-        <div className="card camera-side">
+      <div className="content edu-wrapper">
 
-          <div className="kamera-header">
+        {/* CARD KAMERA */}
+        <div className="card">
+          <div className="card-header">
             <h4><Camera size={18}/> Kamera</h4>
-            <button
-              className="edukasi-btn"
-              onClick={() => setShowEdukasi(!showEdukasi)}
-              title="Lihat Abjad SIBI"
-            >
-              📘
+            <button className="btn-edu" onClick={() => setShowEdu(!showEdu)}>
+              <BookOpen size={18}/>
             </button>
           </div>
 
@@ -179,10 +215,10 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
           </div>
 
           <div className="text-actions">
-            <button onClick={tambahHuruf}>Tambah Huruf</button>
-            <button onClick={tambahSpasi}>Spasi</button>
-            <button onClick={hapusHuruf}>Hapus</button>
-            <button onClick={resetTeks}>Reset</button>
+            <button onClick={() => hurufSaatIni !== "-" && setHasilTeks(p => p + hurufSaatIni)}>Tambah Huruf</button>
+            <button onClick={() => setHasilTeks(p => p + " ")}>Spasi</button>
+            <button onClick={() => setHasilTeks(p => p.slice(0, -1))}>Hapus</button>
+            <button onClick={() => setHasilTeks("")}>Reset</button>
           </div>
 
           <button
@@ -190,19 +226,17 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
             onClick={() => onFinish(hasilTeks)}
             disabled={!hasilTeks}
           >
-            <CheckCircle size={16}/> Selesai
+            <CheckCircle size={16} /> Selesai
           </button>
         </div>
 
-        {showEdukasi && (
-          <div className="edukasi-side">
-            <img
-              src="/abjadsibi.jpg"
-              alt="Abjad SIBI"
-              className="edukasi-img"
-            />
+        {/* PANEL EDUKASI */}
+        {showEdu && (
+          <div className="edu-panel">
+            <img src="abjadsibi.jpg" alt="Edukasi SIBI" />
           </div>
         )}
+
       </div>
     </div>
   );
