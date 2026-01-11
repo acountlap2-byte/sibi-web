@@ -25,8 +25,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   const [hurufSaatIni, setHurufSaatIni] = useState("-");
   const [hasilTeks, setHasilTeks] = useState("");
   const [kameraAktif, setKameraAktif] = useState(false);
-
-  const [showEdu, setShowEdu] = useState(false); // 🔥 EDUKASI
+  const [showEdu, setShowEdu] = useState(false);
 
   /* ================= AKTIFKAN KAMERA ================= */
   const startCamera = async () => {
@@ -128,11 +127,13 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       })
         .then(res => res.json())
         .then(data => {
+          console.log("API:", data);
+
           if (!data || !data.status) return;
 
-          if (data.status === "BUSY" || data.status === "HOLD") return;
+          if (data.status === "HOLD") return;
 
-          if (data.status === "UNSURE" || data.status === "SEARCHING") {
+          if (data.status === "LOW_CONF" || data.status === "SEARCHING") {
             neutralDetectedRef.current = true;
             return;
           }
@@ -154,7 +155,8 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
             neutralDetectedRef.current = false;
             setHurufSaatIni(data.huruf);
           }
-        });
+        })
+        .catch(err => console.error("Fetch error:", err));
     });
 
     cameraRef.current = new CameraUtil(videoRef.current, {
@@ -183,12 +185,9 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
           <ArrowLeft size={18} />
         </button>
         <h2>Penerjemahan Bahasa Isyarat SIBI</h2>
-        
       </div>
 
       <div className="content edu-wrapper">
-
-        {/* CARD KAMERA */}
         <div className="card">
           <div className="card-header">
             <h4><Camera size={18}/> Kamera</h4>
@@ -231,13 +230,11 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
           </button>
         </div>
 
-        {/* PANEL EDUKASI */}
-        {showEdu && ( 
+        {showEdu && (
           <div className="edu-panel">
             <img src="abjadsibi.jpg" alt="Edukasi SIBI" />
           </div>
         )}
-        
       </div>
     </div>
   );
