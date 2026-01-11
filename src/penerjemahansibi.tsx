@@ -13,7 +13,6 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   const cameraRef = useRef<any>(null);
 
   const lastSendRef = useRef(0);
-
   const SEND_INTERVAL = 300;
 
   const [hurufSaatIni, setHurufSaatIni] = useState("-");
@@ -115,17 +114,16 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       fetch("https://phialine-unstamped-baylee.ngrok-free.dev/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          landmark: landmark,
-        }),
+        body: JSON.stringify({ landmark }),
       })
         .then(res => res.json())
         .then(data => {
           console.log("API:", data);
 
-          if (!data || !data.hasil) return;
+          // ===== FIX UTAMA DI SINI =====
+          if (!data || data.status !== "FINAL") return;
 
-          setHurufSaatIni(data.hasil);
+          setHurufSaatIni(data.huruf);
         })
         .catch(err => console.error("FETCH ERROR:", err));
     });
