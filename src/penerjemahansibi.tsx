@@ -132,7 +132,6 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
           if (!data || !data.status) return;
           if (data.status === "HOLD") return;
 
-          // tampilkan langsung walau masih SEARCHING
           if (data.huruf && data.huruf !== "-") {
             setHurufSaatIni(data.huruf);
           }
@@ -157,7 +156,8 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
             neutralDetectedRef.current = false;
             setHurufSaatIni(data.huruf);
           }
-        });
+        })
+        .catch(err => console.error("FETCH ERROR:", err));
     });
 
     cameraRef.current = new CameraUtil(videoRef.current, {
@@ -189,7 +189,6 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       </div>
 
       <div className="content edu-wrapper">
-
         <div className="card">
           <div className="card-header">
             <h4><Camera size={18}/> Kamera</h4>
@@ -237,7 +236,6 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
             <img src="abjadsibi.jpg" alt="Edukasi SIBI" />
           </div>
         )}
-
       </div>
     </div>
   );
