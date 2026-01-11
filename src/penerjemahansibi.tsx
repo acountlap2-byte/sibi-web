@@ -12,15 +12,9 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cameraRef = useRef<any>(null);
 
-  const sessionIdRef = useRef<string>(crypto.randomUUID());
-
   const lastSendRef = useRef(0);
-  const lastHurufRef = useRef<string>("-");
-  const lastFinalTimeRef = useRef(0);
-  const neutralDetectedRef = useRef(true);
 
-  const SEND_INTERVAL = 250;
-  const REPEAT_DELAY = 900;
+  const SEND_INTERVAL = 300;
 
   const [hurufSaatIni, setHurufSaatIni] = useState("-");
   const [hasilTeks, setHasilTeks] = useState("");
@@ -115,47 +109,23 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       if (now - lastSendRef.current < SEND_INTERVAL) return;
       lastSendRef.current = now;
 
-      const landmark = lm.map((p: any) => [p.x, p.y, p.z]);
+      // ===== FLATTEN LANDMARK (21 → 63) =====
+      const landmark = lm.flatMap((p: any) => [p.x, p.y, p.z]);
 
       fetch("https://phialine-unstamped-baylee.ngrok-free.dev/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          session_id: sessionIdRef.current,
-          landmark,
+          landmark: landmark,
         }),
       })
         .then(res => res.json())
         .then(data => {
           console.log("API:", data);
 
-          if (!data || !data.status) return;
-          if (data.status === "HOLD") return;
+          if (!data || !data.hasil) return;
 
-          if (data.huruf && data.huruf !== "-") {
-            setHurufSaatIni(data.huruf);
-          }
-
-          if (data.status !== "FINAL") {
-            neutralDetectedRef.current = true;
-            return;
-          }
-
-          const nowFinal = Date.now();
-
-          const hurufBaru = data.huruf !== lastHurufRef.current;
-
-          const bolehUlangHurufSama =
-            data.huruf === lastHurufRef.current &&
-            neutralDetectedRef.current &&
-            nowFinal - lastFinalTimeRef.current > REPEAT_DELAY;
-
-          if (hurufBaru || bolehUlangHurufSama) {
-            lastHurufRef.current = data.huruf;
-            lastFinalTimeRef.current = nowFinal;
-            neutralDetectedRef.current = false;
-            setHurufSaatIni(data.huruf);
-          }
+          setHurufSaatIni(data.hasil);
         })
         .catch(err => console.error("FETCH ERROR:", err));
     });
