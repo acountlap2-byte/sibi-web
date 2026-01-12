@@ -81,7 +81,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.strokeStyle = "#00ff00";
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 5;
 
       const connections = [
         [0,1],[1,2],[2,3],[3,4],
@@ -102,7 +102,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       ctx.fillStyle = "#ff0000";
       lm.forEach((p: any) => {
         ctx.beginPath();
-        ctx.arc(p.x * canvas.width, p.y * canvas.height, 4, 0, Math.PI * 2);
+        ctx.arc(p.x * canvas.width, p.y * canvas.height, 2, 0, Math.PI * 2);
         ctx.fill();
       });
 
