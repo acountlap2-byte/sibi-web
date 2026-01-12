@@ -124,7 +124,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
         .then(data => {
           console.log("API:", data);
 
-          if (!data || data.status !== "FINAL") return;
+          if (!data || !data.huruf) return;
 
           setHurufSaatIni(data.huruf);
         })
