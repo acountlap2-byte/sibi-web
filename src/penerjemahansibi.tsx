@@ -74,8 +74,9 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       const lm = results.multiHandLandmarks[0];
       if (!lm || lm.length !== 21) return;
 
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      const rect = video.getBoundingClientRect(); 
+      canvas.width = rect.width;
+      canvas.height = rect.height;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
