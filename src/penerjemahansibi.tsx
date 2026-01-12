@@ -15,6 +15,8 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   const lastSendRef = useRef(0);
   const SEND_INTERVAL = 300;
 
+  const sessionIdRef = useRef(crypto.randomUUID());
+
   const [hurufSaatIni, setHurufSaatIni] = useState("-");
   const [hasilTeks, setHasilTeks] = useState("");
   const [kameraAktif, setKameraAktif] = useState(false);
@@ -108,20 +110,22 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       if (now - lastSendRef.current < SEND_INTERVAL) return;
       lastSendRef.current = now;
 
-      // ===== FLATTEN LANDMARK (21 → 63) =====
       const landmark = lm.flatMap((p: any) => [p.x, p.y, p.z]);
 
       fetch("https://phialine-unstamped-baylee.ngrok-free.dev/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ landmark }),
+        body: JSON.stringify({
+          session_id: sessionIdRef.current,
+          landmark: landmark
+        }),
       })
         .then(res => res.json())
         .then(data => {
           console.log("API:", data);
 
-          // ===== FIX UTAMA DI SINI =====
-          if (!data || data.status !== "FINAL") return;
+          // === PERBAIKAN UTAMA ===
+          if (!data || !data.huruf) return;
 
           setHurufSaatIni(data.huruf);
         })
