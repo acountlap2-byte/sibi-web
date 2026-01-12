@@ -15,12 +15,12 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   const lastSendRef = useRef(0);
   const SEND_INTERVAL = 300;
 
-  const sessionIdRef = useRef(crypto.randomUUID());
-
   const [hurufSaatIni, setHurufSaatIni] = useState("-");
   const [hasilTeks, setHasilTeks] = useState("");
   const [kameraAktif, setKameraAktif] = useState(false);
   const [showEdu, setShowEdu] = useState(false);
+
+  const sessionIdRef = useRef(crypto.randomUUID());
 
   /* ================= AKTIFKAN KAMERA ================= */
   const startCamera = async () => {
@@ -74,15 +74,14 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       const lm = results.multiHandLandmarks[0];
       if (!lm || lm.length !== 21) return;
 
-      const rect = video.getBoundingClientRect(); 
-      canvas.width = rect.width;
-      canvas.height = rect.height;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.strokeStyle = "#00ff00";
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 2;
 
       const connections = [
         [0,1],[1,2],[2,3],[3,4],
@@ -103,7 +102,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       ctx.fillStyle = "#ff0000";
       lm.forEach((p: any) => {
         ctx.beginPath();
-        ctx.arc(p.x * canvas.width, p.y * canvas.height, 7, 0, Math.PI * 2);
+        ctx.arc(p.x * canvas.width, p.y * canvas.height, 4, 0, Math.PI * 2);
         ctx.fill();
       });
 
@@ -125,8 +124,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
         .then(data => {
           console.log("API:", data);
 
-          // === PERBAIKAN UTAMA ===
-          if (!data || !data.huruf) return;
+          if (!data || data.status !== "FINAL") return;
 
           setHurufSaatIni(data.huruf);
         })
