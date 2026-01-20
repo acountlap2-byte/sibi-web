@@ -41,113 +41,92 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   };
 
   /* ================= MEDIAPIPE ================= */
-  useEffect(() => {
-    if (!kameraAktif || !videoRef.current) return;
+  const handsRef = useRef<any>(null);
 
-    const Hands = (window as any).Hands;
-    const CameraUtil = (window as any).Camera;
+useEffect(() => {
+  if (!kameraAktif || !videoRef.current) return;
 
-    if (!Hands || !CameraUtil) {
-      console.error("MediaPipe Hands belum tersedia");
-      return;
-    }
+  const Hands = (window as any).Hands;
+  const CameraUtil = (window as any).Camera;
 
-    const hands = new Hands({
-      locateFile: (file: string) =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+  if (!Hands || !CameraUtil) return;
+
+  handsRef.current = new Hands({
+    locateFile: (file: string) =>
+      `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+  });
+
+  handsRef.current.setOptions({
+    maxNumHands: 1,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.7,
+    minTrackingConfidence: 0.7,
+  });
+
+  handsRef.current.onResults((results: any) => {
+    if (!results.multiHandLandmarks) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    const lm = results.multiHandLandmarks[0];
+    if (!lm) return;
+
+    const ctx = canvas.getContext("2d");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx?.clearRect(0,0,canvas.width,canvas.height);
+
+    lm.forEach((p:any)=>{
+      ctx?.beginPath();
+      ctx?.arc(p.x*canvas.width,p.y*canvas.height,4,0,Math.PI*2);
+      ctx?.fill();
     });
 
-    hands.setOptions({
-      maxNumHands: 1,
-      modelComplexity: 1,
-      minDetectionConfidence: 0.7,
-      minTrackingConfidence: 0.7,
-    });
+    const now = Date.now();
+    if (now - lastSendRef.current < SEND_INTERVAL) return;
+    lastSendRef.current = now;
 
-    hands.onResults((results: any) => {
-      if (!results.multiHandLandmarks) return;
+    const landmark = lm.flatMap((p:any)=>[p.x,p.y,p.z]);
 
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      if (!video || !canvas || video.videoWidth === 0) return;
-
-      const lm = results.multiHandLandmarks[0];
-      if (!lm || lm.length !== 21) return;
-
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = "#00ff00";
-      ctx.lineWidth = 2;
-
-      const connections = [
-        [0,1],[1,2],[2,3],[3,4],
-        [0,5],[5,6],[6,7],[7,8],
-        [5,9],[9,10],[10,11],[11,12],
-        [9,13],[13,14],[14,15],[15,16],
-        [13,17],[17,18],[18,19],[19,20],
-        [0,17],
-      ];
-
-      connections.forEach(([a, b]) => {
-        ctx.beginPath();
-        ctx.moveTo(lm[a].x * canvas.width, lm[a].y * canvas.height);
-        ctx.lineTo(lm[b].x * canvas.width, lm[b].y * canvas.height);
-        ctx.stroke();
-      });
-
-      ctx.fillStyle = "#ff0000";
-      lm.forEach((p: any) => {
-        ctx.beginPath();
-        ctx.arc(p.x * canvas.width, p.y * canvas.height, 4, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      const now = Date.now();
-      if (now - lastSendRef.current < SEND_INTERVAL) return;
-      lastSendRef.current = now;
-
-      const landmark = lm.flatMap((p: any) => [p.x, p.y, p.z]);
-
-      fetch("https://phialine-unstamped-baylee.ngrok-free.dev/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          session_id: sessionIdRef.current,
-          landmark: landmark
-        }),
+    fetch("https://phialine-unstamped-baylee.ngrok-free.dev/predict",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        session_id: sessionIdRef.current,
+        landmark
       })
-        .then(res => res.json())
-        .then(data => {
-          console.log("API:", data);
+    })
+    .then(r=>r.json())
+    .then(d=>{
+      if(d?.huruf) setHurufSaatIni(d.huruf);
+    })
+    .catch(()=>{});
+  });
 
-          if (!data || !data.huruf) return;
+  cameraRef.current = new CameraUtil(videoRef.current,{
+    onFrame: async ()=>{
+      if(videoRef.current){
+        await handsRef.current.send({image:videoRef.current});
+      }
+    },
+    width:640,
+    height:480,
+    frameRate:20
+  });
 
-          setHurufSaatIni(data.huruf);
-        })
-        .catch(err => console.error("FETCH ERROR:", err));
-    });
+  cameraRef.current.start();
 
-    cameraRef.current = new CameraUtil(videoRef.current, {
-      onFrame: async () => {
-        if (videoRef.current) {
-          await hands.send({ image: videoRef.current });
-        }
-      },
-      width: 640,
-      height: 480,
-    });
+  return () => {
+    cameraRef.current?.stop();
+    handsRef.current?.close();
 
-    cameraRef.current.start();
+    const stream = videoRef.current?.srcObject as MediaStream;
+    stream?.getTracks().forEach(t=>t.stop());
+  };
+}, [kameraAktif]);
 
-    return () => {
-      cameraRef.current?.stop();
-      hands.close && hands.close();
-    };
-  }, [kameraAktif]);
 
   /* ================= UI ================= */
   return (
