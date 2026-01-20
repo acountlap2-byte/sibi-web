@@ -82,6 +82,9 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       if (!ctx) return;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+        return;
+      }
 
       /* ===== GARIS LANDMARK ===== */
       ctx.strokeStyle = "#00ff00";
