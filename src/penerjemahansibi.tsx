@@ -66,89 +66,76 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
     });
 
     handsRef.current.onResults((results: any) => {
-      if (!results.multiHandLandmarks) return;
+    if (!results.multiHandLandmarks) return;
 
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      if (!video || !canvas || video.videoWidth === 0) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-      const lm = results.multiHandLandmarks[0];
-      if (!lm || lm.length !== 21) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-      const yu = window.devicePixelRatio || 1;
+    const lm = results.multiHandLandmarks[0];
+    if (!lm || lm.length !== 21) return;
 
-      canvas.width = video.videoWidth *yu;
-      canvas.height = video.videoHeight *yu;
+    // FIX MOBILE: ukuran canvas sesuai tampilan layar
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
 
-      canvas.style.width = video.videoWidth + "px" ;
-      canvas.style.height = video.videoHeight + "px" ;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+    const cw = canvas.width;
+    const ch = canvas.height;
 
-      ctx.setTransform(yu, 0, 0, yu, 0, 0);
+    /* ===== GARIS ===== */
+    ctx.strokeStyle = "#00ff00";
+    ctx.lineWidth = 2;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
-        return;
-      }
+    const connections = [
+    [0,1],[1,2],[2,3],[3,4],
+    [0,5],[5,6],[6,7],[7,8],
+    [5,9],[9,10],[10,11],[11,12],
+    [9,13],[13,14],[14,15],[15,16],
+    [13,17],[17,18],[18,19],[19,20],
+    [0,17],
+    ];
 
-      /* ===== GARIS LANDMARK ===== */
-      ctx.strokeStyle = "#00ff00";
-      ctx.lineWidth = 2;
-
-      const connections = [
-        [0,1],[1,2],[2,3],[3,4],
-        [0,5],[5,6],[6,7],[7,8],
-        [5,9],[9,10],[10,11],[11,12],
-        [9,13],[13,14],[14,15],[15,16],
-        [13,17],[17,18],[18,19],[19,20],
-        [0,17],
-      ];
-
-      connections.forEach(([a, b]) => {
-        ctx.beginPath();
-        ctx.moveTo( lm[a].x * video.videoWidth,lm[a].y * video.videoHeight);
-        ctx.lineTo( lm[b].x * video.videoWidth,lm[b].y * video.videoHeight);
-        
-        ctx.stroke();
-      });
-
-      /* ===== TITIK LANDMARK ===== */
-      ctx.fillStyle = "#ff0000";
-      lm.forEach((p:any)=>{
-        ctx.beginPath();
-        ctx.arc(
-          p.x * video.videoWidth,
-          p.y * video.videoHeight,
-          4,
-          0,
-          Math.PI * 2
-        );
-        ctx.fill();
-      });
-
-      /* ===== API ===== */
-      const now = Date.now();
-      if (now - lastSendRef.current < SEND_INTERVAL) return;
-      lastSendRef.current = now;
-
-      const landmark = lm.flatMap((p:any)=>[p.x, p.y, p.z]);
-
-      fetch("https://phialine-unstamped-baylee.ngrok-free.dev/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          session_id: sessionIdRef.current,
-          landmark
-        })
-      })
-      .then(r => r.json())
-      .then(d => {
-        if (d?.huruf) setHurufSaatIni(d.huruf);
-      })
-      .catch(() => {});
+    connections.forEach(([a, b]) => {
+      ctx.beginPath();
+      ctx.moveTo(lm[a].x * cw, lm[a].y * ch);
+      ctx.lineTo(lm[b].x * cw, lm[b].y * ch);
+      ctx.stroke();
     });
+
+    /* ===== TITIK ===== */
+    ctx.fillStyle = "#ff0000";
+      lm.forEach((p: any) => {
+        ctx.beginPath();
+        ctx.arc(p.x * cw, p.y * ch, 4, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    /* ===== API (TETAP DI DALAM onResults) ===== */
+    const now = Date.now();
+    if (now - lastSendRef.current < SEND_INTERVAL) return;
+    lastSendRef.current = now;
+
+    const landmark = lm.flatMap((p: any) => [p.x, p.y, p.z]);
+
+    fetch("https://phialine-unstamped-baylee.ngrok-free.dev/predict", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+       session_id: sessionIdRef.current,
+       landmark
+      })
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d?.huruf) setHurufSaatIni(d.huruf);
+    })
+    .catch(() => {});
+});
 
     cameraRef.current = new CameraUtil(videoRef.current, {
       onFrame: async () => {
