@@ -75,11 +75,18 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       const lm = results.multiHandLandmarks[0];
       if (!lm || lm.length !== 21) return;
 
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      const yu = window.devicePixelRatio || 1;
+
+      canvas.width = video.videoWidth *yu;
+      canvas.height = video.videoHeight *yu;
+
+      canvas.style.width = video.videoWidth + "px" ;
+      canvas.style.height = video.videoHeight + "px" ;
 
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
+
+      ctx.setTransform(yu, 0, 0, yu, 0, 0);
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
@@ -101,8 +108,9 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
 
       connections.forEach(([a, b]) => {
         ctx.beginPath();
-        ctx.moveTo(lm[a].x * canvas.width, lm[a].y * canvas.height);
-        ctx.lineTo(lm[b].x * canvas.width, lm[b].y * canvas.height);
+        ctx.moveTo( lm[a].x * video.videoWidth,lm[a].y * video.videoHeight);
+        ctx.lineTo( lm[b].x * video.videoWidth,lm[b].y * video.videoHeight);
+        
         ctx.stroke();
       });
 
@@ -111,8 +119,8 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       lm.forEach((p:any)=>{
         ctx.beginPath();
         ctx.arc(
-          p.x * canvas.width,
-          p.y * canvas.height,
+          p.x * video.videoWidth,
+          p.y * video.videoHeight,
           4,
           0,
           Math.PI * 2
