@@ -184,8 +184,7 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
 
-/* 📱 MOBILE */
-@media (max-width: 768px) {
+@media (max-width: 780px) {
   .content {
     padding-top: 20px;
     flex-direction: column;
@@ -203,15 +202,14 @@
     margin-top: 12px;
   }
 
+  /* ✅ PERBAIKAN UTAMA */
   .video-wrapper {
-    position: absolute;
-    inset: 0;
+    position: relative;   /* ✅ WAJIB */
     width: 100%;
-    height: 100%;
-    object-fit: contain;
+    aspect-ratio: 3 / 4;  /* ✅ portrait HP */
   }
-}
-.subtitle {
+  .subtitle {
   font-size: 13px;
   color: #64748b;
+  }
 }
