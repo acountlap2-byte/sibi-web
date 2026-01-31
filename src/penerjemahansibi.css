@@ -79,23 +79,24 @@
 .video-wrapper {
   position: relative;
   width: 100%;
-  max-width: 360px;
-  aspect-ratio: 4 / 3;
+  height: 280px;
   border-radius: 14px;
   overflow: hidden;
   background: black;
 }
 
-.video-wrapper video,
-.video-wrapper canvas {
+.video-wrapper .video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ===== CANVAS LANDMARK ===== */
+.canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain; 
-}
-
-.video-wrapper canvas {
   pointer-events: none;
 }
 
@@ -168,7 +169,7 @@
 /* 💻 LAPTOP / DESKTOP */
 .edu-panel {
   position: absolute;
-  top: 30px;              
+  top: 30px;                /* 🔥 naikkan ke atas */
   left: 75%;
   transform: translateX(-50%);
   width: 260px;
@@ -183,7 +184,8 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
 
-@media (max-width: 780px) {
+/* 📱 MOBILE */
+@media (max-width: 768px) {
   .content {
     padding-top: 20px;
     flex-direction: column;
@@ -202,6 +204,10 @@
   }
 
   .video-wrapper {
-    max-width: 100%;
+    height: 240px;
   }
+}
+.subtitle {
+  font-size: 13px;
+  color: #64748b;
 }
