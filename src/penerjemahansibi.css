@@ -191,6 +191,11 @@
     align-items: center;
   }
 
+  .card {
+    margin-right: 0;
+    margin-left: 0;
+  }
+
   .edu-panel {
     position: relative;
     top: auto;
@@ -202,14 +207,15 @@
     margin-top: 12px;
   }
 
-  /* ✅ PERBAIKAN UTAMA */
+  /* ✅ VIDEO WRAPPER MOBILE */
   .video-wrapper {
-    position: relative;   /* ✅ WAJIB */
+    position: relative;
     width: 100%;
-    aspect-ratio: 3 / 4;  /* ✅ portrait HP */
+    aspect-ratio: 3 / 4;
   }
+
   .subtitle {
-  font-size: 13px;
-  color: #64748b;
+    font-size: 13px;
+    color: #64748b;
   }
 }
