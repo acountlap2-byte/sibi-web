@@ -132,19 +132,16 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
         .catch(() => {});
     });
 
-    cameraRef.current = new CameraUtil(videoRef.current, {
-  onFrame: async () => {
-    if (videoRef.current && handsRef.current) {
-      await handsRef.current.send({ image: videoRef.current });
-    }
-  },
-  width: 640,
-  height: 480,
-  frameRate: 20,
-  facingMode: "user",
-  deviceId: {
-  }
-});
+   cameraRef.current = new CameraUtil(videoRef.current, {
+    onFrame: async () => {
+      if (videoRef.current && handsRef.current) {
+        await handsRef.current.send({ image: videoRef.current });
+      }
+    },
+      width: 640,
+      height: 480,
+      frameRate: 20,
+    });
 
     cameraRef.current.start();
 
@@ -172,7 +169,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       <div className="content edu-wrapper">
         <div className="card">
           <div className="card-header">
-            <h4><Camera size={18}/> </h4>
+
             <button className="btn-edu" onClick={() => setShowEdu(!showEdu)}>
               <BookOpen size={18}/>
             </button>
