@@ -66,6 +66,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+  margin: 0;
+  line-height: 1;   
 }
 
 /* ===== BUTTON EDU ===== */

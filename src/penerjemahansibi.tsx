@@ -172,7 +172,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       <div className="content edu-wrapper">
         <div className="card">
           <div className="card-header">
-            <h4><Camera size={18}/> Kamera</h4>
+            <h4><Camera size={18}/> </h4>
             <button className="btn-edu" onClick={() => setShowEdu(!showEdu)}>
               <BookOpen size={18}/>
             </button>
