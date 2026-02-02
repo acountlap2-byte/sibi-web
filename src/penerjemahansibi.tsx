@@ -125,10 +125,10 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       .then((r) => r.json())
       .then((d) => {
         console.log("Response API:", d);
-        if (d?.huruf && d.huruf !== lastPredictionRef.current) {
-          lastPredictionRef.current = d.huruf;
+        if (d?.huruf && d.huruf !== "-") {
           setHurufSaatIni(d.huruf);
         }
+
       })
       .catch(err => console.error("Fetch error:", err));
   });
