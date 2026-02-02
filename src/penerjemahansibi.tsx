@@ -18,6 +18,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
 
   const [hurufSaatIni, setHurufSaatIni] = useState("-");
   const [hasilTeks, setHasilTeks] = useState("");
+  const lastPredictionRef = useRef<string | null>(null);
   const [kameraAktif, setKameraAktif] = useState(false);
   const [showEdu, setShowEdu] = useState(false);
 
@@ -34,6 +35,8 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
 
     navigator.mediaDevices.enumerateDevices().then((devices) => {
   console.table(devices.filter(d => d.kind === "videoinput"));
+    }
+  )
 });
 
     const Hands = (window as any).Hands;
@@ -65,10 +68,11 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
 
       // HAPUS CANVAS JIKA TIDAK ADA TANGAN
       if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        setHurufSaatIni("-");
-        return;
-      }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      return;
+    }
+
+
 
       const lm = results.multiHandLandmarks[0];
       if (!lm || lm.length !== 21) return;
@@ -127,10 +131,14 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       })
         .then((r) => r.json())
         .then((d) => {
-          if (d?.huruf) setHurufSaatIni(d.huruf);
-        })
-        .catch(() => {});
-    });
+          console.log("Response API:", d);
+
+          if (d?.huruf && d.huruf !== lastPredictionRef.current) {
+            lastPredictionRef.current = d.huruf;
+            setHurufSaatIni(d.huruf);
+           }
+    })
+
 
    cameraRef.current = new CameraUtil(videoRef.current, {
     onFrame: async () => {
