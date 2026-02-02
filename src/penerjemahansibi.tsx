@@ -119,7 +119,8 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       if (now - lastSendRef.current < SEND_INTERVAL) return;
       lastSendRef.current = now;
 
-      const landmark = lm.flatMap((p: any) => [p.x, p.y, p.z]);
+      const landmark = lm.map((p: any) => [p.x, p.y, p.z]);
+
 
       fetch("https://phialine-unstamped-baylee.ngrok-free.dev/predict", {
         method: "POST",
