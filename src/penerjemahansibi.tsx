@@ -128,16 +128,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
         if (d?.huruf && d.huruf !== "-") {
           setHurufSaatIni(d.huruf);
         }
-        // AUTO TAMBAH HURUF (HANYA JIKA SUDAH CONFIRMED)
-        if (d?.status === "confirmed" && d.huruf && d.huruf !== "-" &&
-          lastPredictionRef.current !== d.huruf) {
 
-          setHasilTeks(prev => prev + d.huruf);
-          lastPredictionRef.current = d.huruf;
-        }
-        if (d?.status !== "confirmed") {
-          lastPredictionRef.current = null;
-        }
       })
       .catch(err => console.error("Fetch error:", err));
   });
@@ -205,6 +196,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
           </div>
 
           <div className="text-actions">
+            <button onClick={() => hurufSaatIni !== "-" && setHasilTeks(p => p + hurufSaatIni)}>Tambah Huruf</button>
             <button onClick={() => setHasilTeks(p => p + " ")}>Spasi</button>
             <button onClick={() => setHasilTeks(p => p.slice(0, -1))}>Hapus</button>
             <button onClick={() => setHasilTeks("")}>Reset</button>
