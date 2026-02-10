@@ -125,7 +125,9 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       .then((r) => r.json())
       .then((d) => {
         console.log("Response API:", d);
-        if (d?.huruf && d.huruf !== "-") {
+        if (d?.status == "neutral") {
+          setHurufSaatIni("-");
+        } else if (d?.huruf && d.huruf !== "-") {
           setHurufSaatIni(d.huruf);
         }
         if (
