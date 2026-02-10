@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, CheckCircle, Camera, BookOpen } from "lucide-react";
+import { ArrowLeft, CheckCircle, BookOpen } from "lucide-react";
 import "./penerjemahansibi.css";
 
 type Props = {
