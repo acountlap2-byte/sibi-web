@@ -12,6 +12,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cameraRef = useRef<any>(null);
   const handsRef = useRef<any>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const lastSendRef = useRef(0);
   const SEND_INTERVAL = 300;
@@ -33,137 +34,182 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   useEffect(() => {
     if (!kameraAktif || !videoRef.current) return;
 
-     navigator.mediaDevices.enumerateDevices().then((devices) => {
-     console.table(devices.filter(d => d.kind === "videoinput"));
-  });
+    let isMounted = true;
 
-    const Hands = (window as any).Hands;
-    const CameraUtil = (window as any).Camera;
-    
-    if (!Hands || !CameraUtil) {
-    console.error("MediaPipe Hands / Camera belum tersedia");
-    return;
-  }
+    const initCamera = async () => {
+      try {
+        const Hands = (window as any).Hands;
+        const CameraUtil = (window as any).Camera;
 
-  handsRef.current = new Hands({
-    locateFile: (file: string) =>
-      `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
-  });
-
-  handsRef.current.setOptions({
-    maxNumHands: 1,
-    modelComplexity: 1,
-    minDetectionConfidence: 0.7,
-    minTrackingConfidence: 0.7,
-  });
-
-  handsRef.current.onResults((results: any) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      return;
-    }
-
-    
-    const lm = results.multiHandLandmarks[0];
-    if (!lm || lm.length !== 21) return;
-
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const cw = canvas.width;
-    const ch = canvas.height;
-
-    ctx.strokeStyle = "#00ff00";
-    ctx.lineWidth = 2;
-
-    const connections = [
-      [0,1],[1,2],[2,3],[3,4],
-      [0,5],[5,6],[6,7],[7,8],
-      [5,9],[9,10],[10,11],[11,12],
-      [9,13],[13,14],[14,15],[15,16],
-      [13,17],[17,18],[18,19],[19,20],
-      [0,17],
-    ];
-
-    connections.forEach(([a, b]) => {
-      ctx.beginPath();
-      ctx.moveTo(lm[a].x * cw, lm[a].y * ch);
-      ctx.lineTo(lm[b].x * cw, lm[b].y * ch);
-      ctx.stroke();
-    });
-
-    ctx.fillStyle = "#ff0000";
-    lm.forEach((p: any) => {
-      ctx.beginPath();
-      ctx.arc(p.x * cw, p.y * ch, 4, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    const now = Date.now();
-    if (now - lastSendRef.current < SEND_INTERVAL) return;
-    lastSendRef.current = now;
-
-    const landmark = lm.map((p: any) => [p.x, p.y, p.z]);
-
-    fetch("https://phialine-unstamped-baylee.ngrok-free.dev/predict", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        session_id: sessionIdRef.current,
-        landmark,
-      }),
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        console.log("Response API:", d);
-        if (d?.status === "neutral") {
-          setHurufSaatIni("-");
-        } else if (d?.preview && d.preview !== "-") {
-          setHurufSaatIni(d.preview);
-        }
-
-        if (
-          d?.status ==="confirmed" && d.huruf && 
-          lastPredictionRef.current !== d.huruf 
-        ) {
-          setHasilTeks(prev => prev + d.huruf);
-          lastPredictionRef.current = d.huruf; 
-        }
-        if (d?.status !== "confirmed") {
-          lastPredictionRef.current = null;
-        }
-      })
-      .catch(err => console.error("Fetch error:", err));
-  });
-
-  cameraRef.current = new CameraUtil(videoRef.current, {
-    onFrame: async () => {
-      if (videoRef.current && handsRef.current) {
-        await handsRef.current.send({ image: videoRef.current });
+        if (!Hands || !CameraUtil) {
+          console.error("MediaPipe Hands / Camera belum tersedia");
+          return;
       }
-    },
-    width: 640,
-    height: 480,
-    frameRate: 20,
-  });
 
-  cameraRef.current.start();
+      // 🔹 debug optional
+      if (import.meta.env.MODE === "development") {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        console.table(devices.filter(d => d.kind === "videoinput"));
+      }
+
+      // ✅ 1. ambil stream dulu
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user",
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+        },
+        audio: false,
+      });
+
+      if (!isMounted) return;
+
+      streamRef.current = stream;
+
+      // ✅ 2. pasang ke video
+      const videoEl = videoRef.current!;
+      videoEl.srcObject = stream;
+      await videoEl.play(); // 🔥 WAJIB tunggu
+
+      // ✅ 3. init mediapipe
+      handsRef.current = new Hands({
+        locateFile: (file: string) =>
+          `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+      });
+
+      handsRef.current.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 1,
+        minDetectionConfidence: 0.7,
+        minTrackingConfidence: 0.7,
+      });
+
+      handsRef.current.onResults((results: any) => {
+        // ✅ kode gambar kamu BIARKAN seperti sekarang
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        if (!results.multiHandLandmarks?.length) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          return;
+        }
+
+        const lm = results.multiHandLandmarks[0];
+        if (!lm || lm.length !== 21) return;
+
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const cw = canvas.width;
+        const ch = canvas.height;
+
+        ctx.strokeStyle = "#00ff00";
+        ctx.lineWidth = 2;
+
+        const connections = [
+          [0,1],[1,2],[2,3],[3,4],
+          [0,5],[5,6],[6,7],[7,8],
+          [5,9],[9,10],[10,11],[11,12],
+          [9,13],[13,14],[14,15],[15,16],
+          [13,17],[17,18],[18,19],[19,20],
+          [0,17],
+        ];
+
+        connections.forEach(([a, b]) => {
+          ctx.beginPath();
+          ctx.moveTo(lm[a].x * cw, lm[a].y * ch);
+          ctx.lineTo(lm[b].x * cw, lm[b].y * ch);
+          ctx.stroke();
+        });
+
+        ctx.fillStyle = "#ff0000";
+        lm.forEach((p: any) => {
+          ctx.beginPath();
+          ctx.arc(p.x * cw, p.y * ch, 4, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // ===== kirim ke API (biarkan kode kamu) =====
+        const now = Date.now();
+        if (now - lastSendRef.current < SEND_INTERVAL) return;
+        lastSendRef.current = now;
+
+        const landmark = lm.map((p: any) => [p.x, p.y, p.z]);
+
+        fetch("https://phialine-unstamped-baylee.ngrok-free.dev/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session_id: sessionIdRef.current,
+            landmark,
+          }),
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d?.status === "neutral") {
+              setHurufSaatIni("-");
+            } else if (d?.preview && d.preview !== "-") {
+              setHurufSaatIni(d.preview);
+            }
+
+            if (
+              d?.status === "confirmed" &&
+              d.huruf &&
+              lastPredictionRef.current !== d.huruf
+            ) {
+              setHasilTeks(prev => prev + d.huruf);
+              lastPredictionRef.current = d.huruf;
+            }
+
+            if (d?.status !== "confirmed") {
+              lastPredictionRef.current = null;
+            }
+          })
+          .catch(err => console.error("Fetch error:", err));
+      });
+
+      // ✅ 4. BARU start CameraUtil
+      cameraRef.current = new CameraUtil(videoEl, {
+        onFrame: async () => {
+          if (
+            videoRef.current &&
+            videoRef.current.readyState >= 2 && // 
+            handsRef.current
+          ) {
+            await handsRef.current.send({ image: videoRef.current });
+          }
+        },
+        width: 640,
+        height: 480,
+        frameRate: 20,
+      });
+
+      cameraRef.current.start();
+
+    } catch (err) {
+      console.error("Camera init error:", err);
+    }
+  };
+
+  initCamera();
 
   return () => {
+    isMounted = false;
     cameraRef.current?.stop();
     handsRef.current?.close();
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
   };
 }, [kameraAktif]);
-
   /* ================= UI ================= */
   return (
     <div className="page">
