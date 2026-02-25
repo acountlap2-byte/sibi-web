@@ -10,7 +10,6 @@ type Props = {
 export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const cameraRef = useRef<any>(null);
   const handsRef = useRef<any>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
