@@ -38,10 +38,9 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
 
     const initCamera = async () => {
       try {
-        const Hands = (window as any).Hands;
-        const CameraUtil = (window as any).Camera;
+        const Hands = (window as any).Hands
 
-        if (!Hands || !CameraUtil) {
+        if (!Hands) {
           console.error("MediaPipe Hands / Camera belum tersedia");
           return;
       }
@@ -178,18 +177,17 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       const processFrame = async () => {
         if (!isMounted) return;
 
-        if (
-          videoRef.current &&
-          videoRef.current.readyState >= 2 &&
-          handsRef.current
-        ) {
-          await handsRef.current.send({ image: videoRef.current });
-        }
+        const video = videoRef.current;
+        const hands = handsRef.current;
 
-        requestAnimationFrame(processFrame);
-      };
+        if (video && hands && video.readyState >= 2) {
+          await hands.send({ image: video });
+      }
 
-      processFrame();
+      requestAnimationFrame(processFrame);
+    };
+
+    processFrame();
 
     } catch (err) {
       console.error("Camera init error:", err);
