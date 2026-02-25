@@ -52,7 +52,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
         console.table(devices.filter(d => d.kind === "videoinput"));
       }
 
-      // ✅ 1. ambil stream dulu
+      // 1. ambil stream dulu
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: "user",
@@ -66,12 +66,12 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
 
       streamRef.current = stream;
 
-      // ✅ 2. pasang ke video
+      // 2. pasang ke video
       const videoEl = videoRef.current!;
       videoEl.srcObject = stream;
-      await videoEl.play(); // 🔥 WAJIB tunggu
+      await videoEl.play(); // WAJIB tunggu
 
-      // ✅ 3. init mediapipe
+      // 3. init mediapipe
       handsRef.current = new Hands({
         locateFile: (file: string) =>
           `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
@@ -85,7 +85,7 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
       });
 
       handsRef.current.onResults((results: any) => {
-        // ✅ kode gambar kamu BIARKAN seperti sekarang
+        // kode gambar kamu BIARKAN seperti sekarang
         const canvas = canvasRef.current;
         if (!canvas) return;
 
@@ -174,23 +174,22 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
           .catch(err => console.error("Fetch error:", err));
       });
 
-      // ✅ 4. BARU start CameraUtil
-      cameraRef.current = new CameraUtil(videoEl, {
-        onFrame: async () => {
-          if (
-            videoRef.current &&
-            videoRef.current.readyState >= 2 && // 
-            handsRef.current
-          ) {
-            await handsRef.current.send({ image: videoRef.current });
-          }
-        },
-        width: 640,
-        height: 480,
-        frameRate: 20,
-      });
+      // 4. BARU start CameraUtil
+      const processFrame = async () => {
+        if (!isMounted) return;
 
-      cameraRef.current.start();
+        if (
+          videoRef.current &&
+          videoRef.current.readyState >= 2 &&
+          handsRef.current
+        ) {
+          await handsRef.current.send({ image: videoRef.current });
+        }
+
+        requestAnimationFrame(processFrame);
+      };
+
+      processFrame();
 
     } catch (err) {
       console.error("Camera init error:", err);
@@ -201,14 +200,15 @@ export default function PenerjemahanSibi({ onBack, onFinish }: Props) {
 
   return () => {
     isMounted = false;
-    cameraRef.current?.stop();
+
     handsRef.current?.close();
+    handsRef.current = null;
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(t => t.stop());
       streamRef.current = null;
-    }
-  };
+  }
+};
 }, [kameraAktif]);
   /* ================= UI ================= */
   return (
